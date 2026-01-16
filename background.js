@@ -1,184 +1,167 @@
 /**
- * D365 CCaaS Dialer Helper - Background Script v1.2.0
- * Handles on-demand injection into all frames
+ * D365 CCaaS Dialer Helper - Background Script v2.0.6
+ * Handles dynamic frame injection and on-demand fill
  */
 
-// Listen for messages from popup
+// ===========================================
+// WATCH FOR DYNAMICALLY CREATED FRAMES
+// ===========================================
+chrome.webNavigation.onCompleted.addListener(async (details) => {
+  const url = details.url ? details.url.toLowerCase() : '';
+  
+  // Check if this is the target frame (msdyn_chatcontrol)
+  if (url.includes('msdyn_chatcontrol') || url.includes('chatcontrol')) {
+    console.log('📞 BG: Target frame LOADED:', details.url, 'frameId:', details.frameId);
+    
+    // Small delay to let the frame's DOM settle
+    setTimeout(async () => {
+      try {
+        // Get stored settings
+        const settings = await chrome.storage.sync.get({
+          countryName: 'United States',
+          enabled: true,
+          showToast: true
+        });
+        
+        if (!settings.enabled) {
+          console.log('📞 BG: Extension disabled, skipping');
+          return;
+        }
+        
+        console.log('📞 BG: Injecting auto-fill for:', settings.countryName);
+        
+        // Inject and execute the fill function directly
+        await chrome.scripting.executeScript({
+          target: { tabId: details.tabId, frameIds: [details.frameId] },
+          func: autoFillCountry,
+          args: [settings.countryName, settings.showToast]
+        });
+        
+        console.log('📞 BG: Auto-fill injected successfully');
+      } catch (e) {
+        console.log('📞 BG: Injection error:', e.message);
+      }
+    }, 500);
+  }
+}, {
+  url: [{ hostSuffix: '.dynamics.com' }]
+});
+
+// ===========================================
+// AUTO-FILL FUNCTION (injected into target frame)
+// ===========================================
+function autoFillCountry(countryName, showToast) {
+  console.log('📞 AUTO-FILL: Starting for', countryName);
+  
+  // Wait for element with retry
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  function tryFill() {
+    attempts++;
+    console.log('📞 AUTO-FILL: Attempt', attempts);
+    
+    const input = document.getElementById('CRM-Omnichannel-Control-Dialer-regionComboBox-data-automation-id') ||
+                  document.querySelector('input[placeholder="Country/region"]') ||
+                  document.querySelector('input[placeholder*="Country"]');
+    
+    if (!input) {
+      if (attempts < maxAttempts) {
+        console.log('📞 AUTO-FILL: Element not found, retrying in 300ms...');
+        setTimeout(tryFill, 300);
+        return;
+      }
+      console.log('📞 AUTO-FILL: Element not found after', maxAttempts, 'attempts');
+      return;
+    }
+    
+    console.log('📞 AUTO-FILL: Found element!', input);
+    
+    try {
+      // Set value using native setter (for React)
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value'
+      ).set;
+      
+      nativeInputValueSetter.call(input, countryName);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      // Select from dropdown after brief delay
+      setTimeout(() => {
+        const listbox = document.querySelector('[role="listbox"]');
+        if (listbox) {
+          const options = listbox.querySelectorAll('[role="option"]');
+          for (const option of options) {
+            if ((option.textContent || '').toLowerCase().includes(countryName.toLowerCase())) {
+              option.click();
+              break;
+            }
+          }
+        }
+        input.blur();
+        console.log('📞 AUTO-FILL: ✅ Success!');
+        
+        // Show toast
+        if (showToast) {
+          try {
+            const targetDoc = window.top.document;
+            const existing = targetDoc.getElementById('d365-toast');
+            if (existing) existing.remove();
+            
+            const toast = targetDoc.createElement('div');
+            toast.id = 'd365-toast';
+            toast.style.cssText = 'position:fixed;top:12px;right:12px;z-index:9999999;display:flex;align-items:stretch;min-width:320px;background:#323130;border-radius:4px;box-shadow:0 6px 14px rgba(0,0,0,.13);font-family:Segoe UI,sans-serif;overflow:hidden;animation:toastIn .3s ease';
+            toast.innerHTML = '<div style="width:4px;background:#0078d4"></div><div style="display:flex;align-items:center;gap:12px;padding:12px 16px"><div style="width:20px;height:20px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0078d4"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div><div><div style="font-size:14px;font-weight:600;color:#fff">Country/Region Selected</div><div style="font-size:12px;color:#d2d0ce">' + countryName + '</div></div></div>';
+            
+            const style = targetDoc.createElement('style');
+            style.textContent = '@keyframes toastIn{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:translateX(0)}}';
+            targetDoc.head.appendChild(style);
+            targetDoc.body.appendChild(toast);
+            
+            setTimeout(() => { toast.remove(); style.remove(); }, 2500);
+          } catch(e) { console.log('📞 Toast error:', e); }
+        }
+      }, 200);
+      
+    } catch (e) {
+      console.error('📞 AUTO-FILL: Error:', e);
+    }
+  }
+  
+  tryFill();
+}
+
+// ===========================================
+// LISTEN FOR MESSAGES FROM POPUP (Fill Now button)
+// ===========================================
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'FILL_COUNTRY') {
     fillCountryInAllFrames(message.countryName).then(result => {
       sendResponse(result);
     });
-    return true; // Keep channel open for async response
+    return true;
   }
 });
 
 async function fillCountryInAllFrames(countryName) {
   try {
-    // Get the active tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab) {
-      console.log('📞 No active tab');
       return { success: false, error: 'No active tab' };
     }
 
-    console.log('📞 Injecting into tab:', tab.id, 'Country:', countryName);
-
-    // Inject the fill script into ALL frames
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id, allFrames: true },
-      func: fillCountryDropdown,
-      args: [countryName]
+      func: autoFillCountry,
+      args: [countryName, true]
     });
 
-    console.log('📞 Injection results:', results);
-    
-    // Check if any frame found the element
     const foundResult = results.find(r => r.result && r.result.found);
-    if (foundResult) {
-      console.log('📞 Element found in frame:', foundResult.frameId);
-      return { success: true, found: true };
-    }
-    
-    return { success: true, found: false };
+    return { success: true, found: !!foundResult };
 
   } catch (error) {
     console.error('📞 Background error:', error);
     return { success: false, error: error.message };
-  }
-}
-
-// This function runs in EVERY frame
-function fillCountryDropdown(countryName) {
-  console.log('📞 Searching in frame:', window.location.href);
-
-  // Multiple selectors to find the country input
-  const selectors = [
-    '#CRM-Omnichannel-Control-Dialer-regionComboBox-data-automation-id',
-    'input[placeholder="Country/region"]',
-    'input[placeholder*="Country"]',
-    'input[aria-label*="Country"]',
-    'input[aria-label*="region"]',
-    '[data-automation-id*="regionComboBox"] input',
-    '[class*="region"] input[role="combobox"]',
-    'input[role="combobox"]'
-  ];
-
-  let input = null;
-  let matchedSelector = null;
-  
-  for (const selector of selectors) {
-    const elements = document.querySelectorAll(selector);
-    for (const el of elements) {
-      // Check if this looks like the country dropdown
-      const placeholder = el.getAttribute('placeholder') || '';
-      const ariaLabel = el.getAttribute('aria-label') || '';
-      const id = el.id || '';
-      
-      if (placeholder.toLowerCase().includes('country') ||
-          ariaLabel.toLowerCase().includes('country') ||
-          ariaLabel.toLowerCase().includes('region') ||
-          id.toLowerCase().includes('region')) {
-        input = el;
-        matchedSelector = selector;
-        break;
-      }
-    }
-    if (input) break;
-  }
-
-  // Fallback: any combobox that might be the country selector
-  if (!input) {
-    const comboboxes = document.querySelectorAll('input[role="combobox"]');
-    for (const cb of comboboxes) {
-      const rect = cb.getBoundingClientRect();
-      // Check if visible and reasonable size
-      if (rect.width > 50 && rect.height > 20) {
-        const placeholder = cb.getAttribute('placeholder') || '';
-        if (placeholder.toLowerCase().includes('country') || placeholder.toLowerCase().includes('region')) {
-          input = cb;
-          matchedSelector = 'fallback combobox';
-          break;
-        }
-      }
-    }
-  }
-
-  if (!input) {
-    console.log('📞 Input not found in this frame');
-    return { found: false, frame: window.location.href };
-  }
-
-  console.log('📞 FOUND with:', matchedSelector, 'Element:', input);
-
-  // Fill the input
-  try {
-    // Click to focus and potentially open dropdown
-    input.click();
-    input.focus();
-
-    // Use native setter for React
-    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype, 'value'
-    ).set;
-
-    // Clear and set value
-    nativeInputValueSetter.call(input, '');
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    
-    setTimeout(() => {
-      nativeInputValueSetter.call(input, countryName);
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-
-      // Wait and look for dropdown
-      setTimeout(() => {
-        const listbox = document.querySelector('[role="listbox"]');
-        if (listbox) {
-          const options = listbox.querySelectorAll('[role="option"]');
-          console.log('📞 Found', options.length, 'options');
-          for (const option of options) {
-            const text = option.textContent || '';
-            if (text.toLowerCase().includes(countryName.toLowerCase())) {
-              console.log('📞 Clicking option:', text);
-              option.click();
-              break;
-            }
-          }
-        } else {
-          // Try keyboard navigation
-          console.log('📞 No listbox, trying keyboard');
-          input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', keyCode: 40, bubbles: true }));
-          setTimeout(() => {
-            input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
-          }, 100);
-        }
-      }, 500);
-    }, 100);
-
-    // Show visual feedback
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      z-index: 999999;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    `;
-    toast.innerHTML = `🌍 Country set to: <strong>${countryName}</strong>`;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-
-    return { found: true, frame: window.location.href, selector: matchedSelector };
-
-  } catch (error) {
-    console.error('📞 Fill error:', error);
-    return { found: false, error: error.message };
   }
 }

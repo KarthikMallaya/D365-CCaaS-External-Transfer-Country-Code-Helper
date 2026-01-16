@@ -1,5 +1,5 @@
 /**
- * D365 CCaaS Dialer Helper - Content Script v2.0.0
+ * D365 CCaaS Dialer Helper - Content Script v2.0.6
  * Enterprise-grade automatic country selection
  * 
  * Features:
@@ -16,7 +16,7 @@
   // ===========================================
   // CONFIGURATION
   // ===========================================
-  const VERSION = "2.0.0";
+  const VERSION = "2.0.6";
   const DEBUG = false; // Set to true for verbose logging
   
   const CONFIG = {
@@ -57,18 +57,12 @@
   };
 
   // ===========================================
-  // FRAME DETECTION
+  // NO FRAME FILTERING - Run in ALL frames
+  // The MutationObserver will only find the element in the right frame
   // ===========================================
-  const currentUrl = window.location.href;
-  const isTargetFrame = currentUrl.includes('msdyn_chatcontrol.htm');
+  Logger.debug("Running in frame:", window.location.href);
 
-  Logger.info("Loaded in frame:", isTargetFrame ? "TARGET ✓" : "skipping");
-
-  if (!isTargetFrame) {
-    return;
-  }
-
-  Logger.info("v" + VERSION + " Active - Enterprise Mode");
+  Logger.info("v" + VERSION + " Active - Watching all frames");
 
   // ===========================================
   // MULTI-SELECTOR DETECTION (Survives MS Updates)
@@ -461,25 +455,37 @@
   Logger.info("Auto-detection active (enterprise mode)");
 
   var lastProcessTime = 0;
+  var mutationCount = 0;
 
   var observer = new MutationObserver(function(mutations) {
+    mutationCount++;
+    
     if (!SETTINGS.enabled) return;
     
-    // Debounce rapid mutations
+    // Log every 50th mutation to avoid spam
+    if (mutationCount % 50 === 0) {
+      Logger.debug("Mutation #" + mutationCount + ", checking for input...");
+    }
+    
+    // Debounce rapid mutations - reduced to 200ms
     var now = Date.now();
-    if (now - lastProcessTime < CONFIG.DEBOUNCE_MS) return;
+    if (now - lastProcessTime < 200) return;
     
     var result = findCountryInput();
     
-    if (result.element && !processed.has(result.element)) {
-      var rect = result.element.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        lastProcessTime = now;
-        processed.add(result.element);
-        Logger.info("🎯 Input detected! Confidence: " + result.confidence + "% (" + result.selector + ")");
-        setTimeout(function() {
-          selectCountryWithRetry(result.element, 0);
-        }, 100);
+    if (result.element) {
+      Logger.debug("Found element! Checking if processed...");
+      if (!processed.has(result.element)) {
+        var rect = result.element.getBoundingClientRect();
+        Logger.debug("Element rect: " + rect.width + "x" + rect.height);
+        if (rect.width > 0 && rect.height > 0) {
+          lastProcessTime = now;
+          processed.add(result.element);
+          Logger.info("🎯 Input detected! Confidence: " + result.confidence + "% (" + result.selector + ")");
+          setTimeout(function() {
+            selectCountryWithRetry(result.element, 0);
+          }, 100);
+        }
       }
     }
   });
@@ -488,6 +494,21 @@
     childList: true,
     subtree: true
   });
+
+  // Also use a backup interval - check every 500ms
+  var backupCheckInterval = setInterval(function() {
+    if (!SETTINGS.enabled) return;
+    
+    var result = findCountryInput();
+    if (result.element && !processed.has(result.element)) {
+      var rect = result.element.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        processed.add(result.element);
+        Logger.info("🎯 Input found via backup check! Confidence: " + result.confidence + "%");
+        selectCountryWithRetry(result.element, 0);
+      }
+    }
+  }, 500);
 
   // One-time initial check
   setTimeout(function() {
