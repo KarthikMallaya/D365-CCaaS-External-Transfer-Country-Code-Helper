@@ -1,5 +1,5 @@
 /**
- * D365 CCaaS Dialer Helper - Background Script v2.0.7
+ * D365 CCaaS Dialer Helper - Background Script v2.0.8
  * Handles dynamic frame injection and on-demand fill
  */
 

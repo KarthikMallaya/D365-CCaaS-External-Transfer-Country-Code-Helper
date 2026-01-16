@@ -1,5 +1,5 @@
 /**
- * D365 CCaaS Dialer Helper - Popup Script v2.0.7
+ * D365 CCaaS Dialer Helper - Popup Script v2.0.8
  */
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -1,5 +1,5 @@
 /**
- * D365 CCaaS Dialer Helper - Content Script v2.0.7
+ * D365 CCaaS Dialer Helper - Content Script v2.0.8
  * Enterprise-grade automatic country selection
  * 
  * Features:
@@ -16,7 +16,7 @@
   // ===========================================
   // CONFIGURATION
   // ===========================================
-  const VERSION = "2.0.7";
+  const VERSION = "2.0.8";
   const DEBUG = false; // Set to true for verbose logging
   
   const CONFIG = {
@@ -194,6 +194,42 @@
   }
 
   // ===========================================
+  // FILL DIAL CODE IN PHONE NUMBER INPUT
+  // ===========================================
+  function fillDialCode(dialCode) {
+    if (!dialCode) return;
+    
+    // Find the phone number input by its ID
+    const phoneInput = document.querySelector('#CRM-Omnichannel-Control-Dialer-nationalNumberInput-data-automation-id');
+    
+    if (!phoneInput) {
+      Logger.debug("Phone number input not found");
+      return;
+    }
+    
+    // Only fill if empty
+    if (phoneInput.value && phoneInput.value.trim() !== '') {
+      Logger.debug("Phone input already has value, skipping dial code fill");
+      return;
+    }
+    
+    try {
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value'
+      ).set;
+      
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(phoneInput, dialCode);
+        phoneInput.dispatchEvent(new Event('input', { bubbles: true }));
+        phoneInput.dispatchEvent(new Event('change', { bubbles: true }));
+        Logger.success("Dial code filled: " + dialCode);
+      }
+    } catch (error) {
+      Logger.debug("Could not fill dial code:", error.message);
+    }
+  }
+
+  // ===========================================
   // RETRY LOGIC WITH EXPONENTIAL BACKOFF
   // ===========================================
   function selectCountryWithRetry(input, attempt) {
@@ -276,6 +312,10 @@
         
         if (selected) {
           Logger.success("Country selected: " + countryName);
+          
+          // Also populate the phone number input with the dial code
+          fillDialCode(SETTINGS.dialCode);
+          
           if (SETTINGS.showToast) {
             showToast(countryName, SETTINGS.dialCode, false);
           }

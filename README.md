@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.7-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-2.0.8-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/manifest-v3-green.svg" alt="Manifest V3">
   <img src="https://img.shields.io/badge/chrome-compatible-brightgreen.svg" alt="Chrome">
   <img src="https://img.shields.io/badge/edge-compatible-brightgreen.svg" alt="Edge">
@@ -110,7 +110,7 @@ A browser extension operates at the browser level, not the D365 API level, allow
 - ✅ **Seamless Integration** - Works within the D365 CCaaS interface
 - ✅ **Zero Training Required** - Set once, works automatically
 
-### Enterprise Features (v2.0.7)
+### Enterprise Features (v2.0.8)
 - ✅ **Multi-Selector Fallback** - 7 fallback selectors survive Microsoft UI updates
 - ✅ **Confidence Scoring** - Reports detection confidence (50-100%)
 - ✅ **Retry with Exponential Backoff** - Auto-retries on failure (3 attempts)
@@ -216,7 +216,7 @@ If auto-detection doesn't trigger, use the popup:
 ### Verify Extension is Working
 
 1. Open browser DevTools (F12) → Console tab
-2. Look for: `📞 D365 Dialer | v2.0.7 Active - Watching all frames`
+2. Look for: `📞 D365 Dialer | v2.0.8 Active - Watching all frames`
 3. When country is auto-filled: `📞 D365 Dialer ✅ | Country selected: [country name]`
 
 ---
@@ -376,10 +376,11 @@ const DEBUG = true; // Change from false to true
 Then check browser DevTools console (F12) for detailed logs:
 ```
 📞 D365 Dialer | Loaded in frame: TARGET ✓
-📞 D365 Dialer | v2.0.7 Active - Watching all frames
+📞 D365 Dialer | v2.0.8 Active - Watching all frames
 📞 D365 Dialer [DEBUG] | Settings loaded: Australia
 📞 D365 Dialer | 🎯 Input detected! Confidence: 100% (exact-id)
 📞 D365 Dialer ✅ | Country selected: Australia
+📞 D365 Dialer ✅ | Dial code filled: +61
 ```
 
 ### Support Diagnostics
@@ -475,6 +476,11 @@ Include:
 ---
 
 ## Changelog
+
+### v2.0.8 (January 2026) - Auto-fill Dial Code
+- ✨ Auto-populate dial code (+1, +61, etc.) in phone number input
+- ✨ Dial code fills automatically when country is selected
+- 👁️ Only fills if phone input is empty (won't overwrite)
 
 ### v2.0.7 (January 2026) - UI Cleanup
 - ✨ Multi-selector fallback with confidence scoring
