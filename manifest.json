@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "D365 CCaaS Dialer Helper",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Enterprise-grade auto-population of country/region code in Dynamics 365 CCaaS external transfer dialer",
   "author": "Your Name",
   "permissions": ["storage", "activeTab", "scripting", "webNavigation"],

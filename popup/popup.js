@@ -1,14 +1,11 @@
 /**
- * D365 CCaaS Dialer Helper - Popup Script v1.4.0
+ * D365 CCaaS Dialer Helper - Popup Script v2.0.7
  */
 
 document.addEventListener("DOMContentLoaded", () => {
   const enabledToggle = document.getElementById("enabledToggle");
   const toastToggle = document.getElementById("toastToggle");
   const countrySelect = document.getElementById("countrySelect");
-  const countryFlag = document.getElementById("countryFlag");
-  const countryName = document.getElementById("countryName");
-  const countryCode = document.getElementById("countryCode");
   const statusEl = document.getElementById("status");
   const statusText = document.getElementById("statusText");
   const versionEl = document.getElementById("version");
@@ -33,22 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
     COUNTRIES.forEach((country) => {
       const option = document.createElement("option");
       option.value = country.name;
+      // Don't include flag emoji in dropdown - it doesn't render well on Windows
+      // The flag is shown prominently in the preview section below
       option.textContent = country.disabled 
         ? country.name 
-        : `${country.flag} ${country.name} (${country.code})`;
+        : `${country.name} (${country.code})`;
       option.disabled = country.disabled || false;
       countrySelect.appendChild(option);
     });
-  }
-
-  // Update the display info
-  function updateDisplay(selectedCountryName) {
-    const country = findCountry(selectedCountryName);
-    if (country) {
-      countryFlag.textContent = country.flag;
-      countryName.textContent = country.name;
-      countryCode.textContent = country.code;
-    }
   }
 
   // Update status indicator
@@ -76,8 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
       enabledToggle.checked = settings.enabled;
       toastToggle.checked = settings.showToast;
       countrySelect.value = settings.countryName;
-      
-      updateDisplay(settings.countryName);
       updateStatus(settings.enabled);
     });
   }
@@ -169,7 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const country = findCountry(selectedCountry);
     
     if (country) {
-      updateDisplay(selectedCountry);
       saveSettings({
         countryName: country.name,
         dialCode: country.code

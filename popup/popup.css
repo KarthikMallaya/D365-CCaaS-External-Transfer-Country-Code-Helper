@@ -1,4 +1,4 @@
-/* D365 CCaaS Dialer Helper - Modern Light Theme v1.4.0 */
+/* D365 CCaaS Dialer Helper - Modern Light Theme v2.0.7 */
 
 * {
   margin: 0;
@@ -12,6 +12,11 @@ body {
   color: #1a1a1a;
   min-width: 360px;
   max-width: 400px;
+}
+
+/* Emoji font support for flags */
+.emoji, .preview-flag {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif;
 }
 
 .container {
@@ -119,7 +124,7 @@ body {
   width: 100%;
   padding: 14px 44px 14px 16px;
   font-size: 14px;
-  font-family: inherit;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #1a1a1a;
   background: #f8f9fa;
   border: 1px solid #d1d5db;

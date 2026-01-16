@@ -1,5 +1,5 @@
 /**
- * D365 CCaaS Dialer Helper - Content Script v2.0.6
+ * D365 CCaaS Dialer Helper - Content Script v2.0.7
  * Enterprise-grade automatic country selection
  * 
  * Features:
@@ -16,7 +16,7 @@
   // ===========================================
   // CONFIGURATION
   // ===========================================
-  const VERSION = "2.0.6";
+  const VERSION = "2.0.7";
   const DEBUG = false; // Set to true for verbose logging
   
   const CONFIG = {
