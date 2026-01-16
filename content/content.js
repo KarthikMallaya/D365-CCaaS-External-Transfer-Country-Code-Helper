@@ -524,21 +524,6 @@
     }
   }, CONFIG.INITIAL_CHECK_DELAY);
 
-  // ===========================================
-  // HEALTH CHECK (for debugging)
-  // ===========================================
-  window.__D365DialerHealth = function() {
-    return {
-      version: VERSION,
-      enabled: SETTINGS.enabled,
-      country: SETTINGS.countryName,
-      showToast: SETTINGS.showToast,
-      observerActive: !!observer,
-      lastProcessTime: lastProcessTime,
-      selectorsCount: SELECTORS.length
-    };
-  };
-
   Logger.success("Enterprise extension ready");
 
 })();

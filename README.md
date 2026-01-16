@@ -116,7 +116,6 @@ A browser extension operates at the browser level, not the D365 API level, allow
 - ✅ **Retry with Exponential Backoff** - Auto-retries on failure (3 attempts)
 - ✅ **Input Sanitization** - XSS prevention and validation
 - ✅ **Structured Logging** - Debug mode for troubleshooting
-- ✅ **Health Check API** - `window.__D365DialerHealth()` for diagnostics
 - ✅ **High-Volume Optimized** - Handles 50+ transfers per shift
 
 ### User Experience
@@ -214,25 +213,11 @@ If auto-detection doesn't trigger, use the popup:
 2. Click **"Fill Country Now"** button
 3. The country will be filled in the active transfer dialog
 
-### Health Check (For Admins)
+### Verify Extension is Working
 
-Open browser DevTools (F12) and run:
-```javascript
-window.__D365DialerHealth()
-```
-
-Returns:
-```javascript
-{
-  version: "2.0.7",
-  enabled: true,
-  country: "Australia",
-  showToast: true,
-  observerActive: true,
-  lastProcessTime: 1705412345678,
-  selectorsCount: 7
-}
-```
+1. Open browser DevTools (F12) → Console tab
+2. Look for: `📞 D365 Dialer | v2.0.7 Active - Watching all frames`
+3. When country is auto-filled: `📞 D365 Dialer ✅ | Country selected: [country name]`
 
 ---
 
@@ -374,7 +359,7 @@ Create a managed storage policy to set default country:
   - Extension only runs in `msdyn_chatcontrol.htm` iframe
 - **Cause 3**: Element ID changed
   - Check console for "Input detected" message
-  - Run `window.__D365DialerHealth()` to verify
+  - Enable DEBUG mode (see below) for detailed logs
 
 #### Toast notification not appearing
 - **Cause**: Cross-origin restriction or toggle disabled
@@ -474,17 +459,17 @@ Tested for:
 ### Getting Help
 
 1. **Check Troubleshooting** section above
-2. **Enable Debug Mode** and capture logs
-3. **Run Health Check**: `window.__D365DialerHealth()`
+2. **Enable Debug Mode** and capture console logs
+3. **Check popup** for current settings and version
 4. **Contact**: [Your IT Support Channel]
 
 ### Reporting Issues
 
 Include:
 - Browser version
-- Extension version (from popup or health check)
+- Extension version (from popup footer)
 - Steps to reproduce
-- Console logs
+- Console logs (with DEBUG enabled)
 - Screenshots
 
 ---
@@ -496,7 +481,6 @@ Include:
 - ✨ Retry logic with exponential backoff (3 attempts)
 - ✨ Input sanitization and validation
 - ✨ Structured logging system with DEBUG mode
-- ✨ Health check API (`window.__D365DialerHealth()`)
 - ✨ Error toast notifications
 - 🐛 Fixed version mismatch in logs
 - ⚡ Performance optimizations for high-volume centers
