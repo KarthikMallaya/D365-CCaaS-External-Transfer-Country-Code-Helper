@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-2.0.6-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/manifest-v3-green.svg" alt="Manifest V3">
   <img src="https://img.shields.io/badge/chrome-compatible-brightgreen.svg" alt="Chrome">
   <img src="https://img.shields.io/badge/edge-compatible-brightgreen.svg" alt="Edge">
@@ -73,7 +73,7 @@ When contact center agents need to transfer calls to external phone numbers, the
 - ✅ **Seamless Integration** - Works within the D365 CCaaS interface
 - ✅ **Zero Training Required** - Set once, works automatically
 
-### Enterprise Features (v2.0.0)
+### Enterprise Features (v2.0.6)
 - ✅ **Multi-Selector Fallback** - 7 fallback selectors survive Microsoft UI updates
 - ✅ **Confidence Scoring** - Reports detection confidence (50-100%)
 - ✅ **Retry with Exponential Backoff** - Auto-retries on failure (3 attempts)
@@ -187,7 +187,7 @@ window.__D365DialerHealth()
 Returns:
 ```javascript
 {
-  version: "2.0.0",
+  version: "2.0.6",
   enabled: true,
   country: "Australia",
   showToast: true,
@@ -354,7 +354,7 @@ const DEBUG = true; // Change from false to true
 Then check browser DevTools console (F12) for detailed logs:
 ```
 📞 D365 Dialer | Loaded in frame: TARGET ✓
-📞 D365 Dialer | v2.0.0 Active - Enterprise Mode
+📞 D365 Dialer | v2.0.6 Active - Watching all frames
 📞 D365 Dialer [DEBUG] | Settings loaded: Australia
 📞 D365 Dialer | 🎯 Input detected! Confidence: 100% (exact-id)
 📞 D365 Dialer ✅ | Country selected: Australia
@@ -454,7 +454,7 @@ Include:
 
 ## Changelog
 
-### v2.0.0 (January 2026) - Enterprise Edition
+### v2.0.6 (January 2026) - Stable Release
 - ✨ Multi-selector fallback with confidence scoring
 - ✨ Retry logic with exponential backoff (3 attempts)
 - ✨ Input sanitization and validation
