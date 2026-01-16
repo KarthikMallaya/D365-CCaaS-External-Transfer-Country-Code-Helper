@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D365 CCaaS Dialer Helper</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <img src="../icons/d365logo.png" alt="Dynamics 365" class="logo">
+      <h1>D365 CCaaS Dialer Helper</h1>
+      <p class="subtitle">Auto-populate country code for external transfers</p>
+      <span class="badge">v<span id="version"></span> • Works on *.dynamics.com</span>
+    </header>
+
+    <!-- Country Selection Section -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-indicator"></div>
+        <h2>Country Settings</h2>
+      </div>
+      <p class="section-desc">Select your preferred country/region for external transfer dialing.</p>
+      
+      <label class="field-label">Preferred Country *</label>
+      <div class="select-wrapper">
+        <select id="countrySelect">
+          <option value="">Loading countries...</option>
+        </select>
+        <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+      
+      <div class="selected-preview">
+        <span class="preview-flag" id="countryFlag">🇺🇸</span>
+        <span class="preview-name" id="countryName">United States</span>
+        <span class="preview-code" id="countryCode">+1</span>
+      </div>
+    </section>
+
+    <!-- Options Section -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-indicator purple"></div>
+        <h2>Options</h2>
+      </div>
+      
+      <div class="option-row">
+        <div class="option-info">
+          <span class="option-label">Enable Auto-fill</span>
+          <span class="option-desc">Automatically populate country when transfer dialog opens</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="enabledToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      
+      <div class="option-row">
+        <div class="option-info">
+          <span class="option-label">Show Notifications</span>
+          <span class="option-desc">Display confirmation when country is set</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toastToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Action Button -->
+    <button class="action-button" id="fillNowBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+      Fill Country Now
+    </button>
+
+    <!-- Status -->
+    <div class="status" id="status">
+      <div class="status-dot"></div>
+      <span id="statusText">Ready</span>
+    </div>
+  </div>
+
+  <script src="countries.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

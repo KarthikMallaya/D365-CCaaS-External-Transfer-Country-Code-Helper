@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Icon Generator - D365 CCaaS Dialer Helper Browser Extension</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #1e293b;
+      color: #f1f5f9;
+    }
+    h1 { color: #3b82f6; }
+    .icons { display: flex; gap: 30px; align-items: flex-end; margin: 30px 0; }
+    .icon-box { text-align: center; }
+    .icon-box canvas { 
+      background: #0f172a; 
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .icon-box p { margin-top: 10px; font-size: 14px; color: #94a3b8; }
+    button {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    button:hover { opacity: 0.9; }
+    .instructions {
+      background: #0f172a;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 30px;
+    }
+    .instructions h3 { color: #3b82f6; margin-top: 0; }
+    .instructions ol { padding-left: 20px; }
+    .instructions li { margin: 10px 0; color: #cbd5e1; }
+  </style>
+</head>
+<body>
+  <h1>🎨 Icon Generator</h1>
+  <p>Generate PNG icons for the D365 CCaaS Dialer Helper extension.</p>
+  
+  <div class="icons" id="icons"></div>
+  
+  <div>
+    <button onclick="downloadAll()">📥 Download All Icons</button>
+  </div>
+
+  <div class="instructions">
+    <h3>📋 Instructions</h3>
+    <ol>
+      <li>Open this HTML file in any modern browser</li>
+      <li>Click "Download All Icons" to download all PNG files</li>
+      <li>Move the downloaded files to the <code>icons/</code> folder</li>
+      <li>Reload the extension in your browser's extensions page</li>
+    </ol>
+  </div>
+
+  <script>
+    const sizes = [16, 32, 48, 128];
+    const container = document.getElementById('icons');
+    const canvases = {};
+
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = size;
+      canvas.height = size;
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#3b82f6');
+      gradient.addColorStop(1, '#1d4ed8');
+      
+      // Rounded rectangle
+      const radius = size * 0.22;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      
+      // Phone icon
+      const scale = size / 128;
+      ctx.save();
+      ctx.scale(scale, scale);
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      ctx.beginPath();
+      ctx.moveTo(88, 78);
+      ctx.lineTo(88, 90);
+      ctx.quadraticCurveTo(88, 98, 79.3, 98);
+      ctx.stroke();
+      
+      // Simplified phone body
+      ctx.beginPath();
+      ctx.moveTo(79, 98);
+      ctx.bezierCurveTo(50, 90, 40, 70, 32, 41);
+      ctx.quadraticCurveTo(30, 33, 38, 32);
+      ctx.lineTo(50, 32);
+      ctx.quadraticCurveTo(57, 32, 58, 39);
+      ctx.bezierCurveTo(60, 45, 61, 50, 61, 54);
+      ctx.quadraticCurveTo(61, 60, 56, 63);
+      ctx.lineTo(47, 63);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(66, 82);
+      ctx.lineTo(70, 78);
+      ctx.quadraticCurveTo(75, 74, 80, 76);
+      ctx.bezierCurveTo(85, 77, 90, 79, 93, 80);
+      ctx.quadraticCurveTo(100, 82, 100, 90);
+      ctx.stroke();
+      
+      // Plus badge circle
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(92, 38, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 4;
+      
+      // Plus sign
+      ctx.fillStyle = '#1d4ed8';
+      ctx.font = 'bold 28px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('+', 92, 40);
+      
+      ctx.restore();
+    }
+
+    // Create canvases
+    sizes.forEach(size => {
+      const box = document.createElement('div');
+      box.className = 'icon-box';
+      
+      const canvas = document.createElement('canvas');
+      drawIcon(canvas, size);
+      canvases[size] = canvas;
+      
+      box.appendChild(canvas);
+      box.innerHTML += `<p>icon${size}.png<br>${size}×${size}</p>`;
+      container.appendChild(box);
+    });
+
+    function downloadAll() {
+      sizes.forEach(size => {
+        const link = document.createElement('a');
+        link.download = `icon${size}.png`;
+        link.href = canvases[size].toDataURL('image/png');
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>

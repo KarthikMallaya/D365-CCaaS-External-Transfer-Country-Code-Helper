@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate D365 Dialer Icons</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 40px; background: #f5f5f5; }
+    h1 { color: #0078d4; }
+    .icons { display: flex; gap: 20px; align-items: flex-end; margin: 30px 0; }
+    .icon-box { text-align: center; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .icon-box canvas { display: block; margin: 0 auto 10px; }
+    .icon-box span { font-size: 12px; color: #666; }
+    button { background: #0078d4; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 20px; }
+    button:hover { background: #005a9e; }
+    .download-links { margin-top: 20px; }
+    .download-links a { display: inline-block; margin: 5px 10px; color: #0078d4; }
+    .instructions { background: #fff3cd; padding: 15px; border-radius: 4px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>📞 D365 CCaaS Dialer - Icon Generator</h1>
+  <p>Click the button below to generate and download all icon sizes.</p>
+  
+  <div class="icons" id="icons"></div>
+  
+  <button onclick="downloadAll()">⬇️ Download All Icons</button>
+  
+  <div class="download-links" id="links"></div>
+  
+  <div class="instructions">
+    <strong>Instructions:</strong>
+    <ol>
+      <li>Click "Download All Icons" button</li>
+      <li>Save each icon to your <code>icons/</code> folder</li>
+      <li>Reload the extension in Chrome/Edge</li>
+    </ol>
+  </div>
+
+  <script>
+    const sizes = [16, 32, 48, 128];
+    
+    function createIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      // Background - D365 blue gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#0078d4');
+      gradient.addColorStop(1, '#005a9e');
+      
+      // Rounded rectangle
+      const radius = size * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      
+      // Phone icon (simplified for small sizes)
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'white';
+      
+      const cx = size / 2;
+      const cy = size / 2;
+      const scale = size / 128;
+      
+      // Draw phone receiver
+      ctx.lineWidth = Math.max(2, 6 * scale);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      // Phone shape - classic receiver
+      ctx.beginPath();
+      const pw = 35 * scale;  // phone width
+      const ph = 50 * scale;  // phone height
+      
+      // Left earpiece
+      ctx.moveTo(cx - pw, cy - ph * 0.4);
+      ctx.quadraticCurveTo(cx - pw - 5*scale, cy, cx - pw, cy + ph * 0.4);
+      
+      // Right earpiece  
+      ctx.moveTo(cx + pw, cy - ph * 0.4);
+      ctx.quadraticCurveTo(cx + pw + 5*scale, cy, cx + pw, cy + ph * 0.4);
+      
+      // Top connector
+      ctx.moveTo(cx - pw, cy - ph * 0.4);
+      ctx.quadraticCurveTo(cx, cy - ph * 0.8, cx + pw, cy - ph * 0.4);
+      
+      // Bottom connector
+      ctx.moveTo(cx - pw, cy + ph * 0.4);
+      ctx.quadraticCurveTo(cx, cy + ph * 0.8, cx + pw, cy + ph * 0.4);
+      
+      ctx.stroke();
+      
+      // Globe in center
+      const gr = 18 * scale;
+      ctx.beginPath();
+      ctx.arc(cx, cy, gr, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Globe lines
+      ctx.beginPath();
+      ctx.moveTo(cx - gr, cy);
+      ctx.lineTo(cx + gr, cy);
+      ctx.moveTo(cx, cy - gr);
+      ctx.lineTo(cx, cy + gr);
+      ctx.stroke();
+      
+      // Curved latitude line
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, gr * 0.5, gr, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      return canvas;
+    }
+    
+    // Generate preview icons
+    const container = document.getElementById('icons');
+    const canvases = {};
+    
+    sizes.forEach(size => {
+      const box = document.createElement('div');
+      box.className = 'icon-box';
+      
+      const canvas = createIcon(size);
+      canvases[size] = canvas;
+      box.appendChild(canvas);
+      
+      const label = document.createElement('span');
+      label.textContent = size + 'x' + size;
+      box.appendChild(label);
+      
+      container.appendChild(box);
+    });
+    
+    function downloadAll() {
+      sizes.forEach((size, i) => {
+        setTimeout(() => {
+          const canvas = canvases[size];
+          const link = document.createElement('a');
+          link.download = 'icon' + size + '.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }, i * 500);
+      });
+    }
+  </script>
+</body>
+</html>
