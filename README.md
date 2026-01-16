@@ -22,6 +22,7 @@
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [Why a Browser Extension?](#why-a-browser-extension)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -62,6 +63,42 @@ When contact center agents need to transfer calls to external phone numbers, the
 | 50 transfers/day × 100 agents | **~7-14 hours saved daily** |
 | Agent satisfaction | Reduced friction |
 | Error rate | Fewer wrong country selections |
+
+---
+
+## Why a Browser Extension?
+
+At the time of developing this solution (January 2026), Microsoft does not provide an official client-side JavaScript API or hooks to customize the **Conversation Control Panel** in Dynamics 365 Contact Center.
+
+### Technical Limitation
+
+The external transfer dialog (including the country/region dropdown) is rendered inside a Microsoft-managed iframe (`msdyn_chatcontrol.htm`). This control:
+
+- ❌ Does **not** expose JavaScript events or methods
+- ❌ Cannot be accessed via standard D365 Client API (`formContext`, `Xrm.Page`)
+- ❌ Cannot be customized using web resources attached to the Conversation form
+- ❌ Has no documented hooks for field pre-population
+
+### Why Not a D365 Solution?
+
+| Approach | Feasibility |
+|----------|-------------|
+| JavaScript Web Resource on Conversation Form | ❌ Cannot access iframe content |
+| Client Script / Form Events | ❌ No events exposed for transfer dialog |
+| Power Automate / Flow | ❌ Cannot manipulate UI elements |
+| PCF Control | ❌ Cannot replace Microsoft's control |
+| **Browser Extension** | ✅ Can inject into all frames |
+
+### Browser Extension Advantage
+
+A browser extension operates at the browser level, not the D365 API level, allowing it to:
+
+- ✅ Inject scripts into **all frames** including Microsoft-managed iframes
+- ✅ Observe DOM changes via MutationObserver
+- ✅ Interact directly with UI elements regardless of origin
+- ✅ Work without modifying the D365 environment
+
+> **Note**: If Microsoft introduces an official API for the Conversation Control Panel in the future, a D365-native solution would be preferable. This extension serves as a practical workaround until such APIs become available.
 
 ---
 
